@@ -27,7 +27,7 @@ namespace MovieBookingAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Book>>> GetBookItems()
         {
-            var book = await _context.GetBookItems.ToListAsync();
+            var book = await _context.BookItems.ToListAsync();
 
             foreach (var item in book.Where(w => w.Currency != "sgd"))
             {
@@ -36,7 +36,7 @@ namespace MovieBookingAPI.Controllers
             }
 
             return book;
-           
+
         }
 
         // GET: api/Books/5
@@ -89,7 +89,7 @@ namespace MovieBookingAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Book>> PostBook(Book book)
         {
-             var value = await CurrencyConvertor(book.Currency);
+            var value = await CurrencyConvertor(book.Currency);
             book.Amount = book.Amount * value;
             _context.BookItems.Add(book);
             await _context.SaveChangesAsync();
@@ -142,7 +142,7 @@ namespace MovieBookingAPI.Controllers
 
             return results;
         }
-        
+
         private bool BookExists(int id)
         {
             return _context.BookItems.Any(e => e.BookingId == id);
