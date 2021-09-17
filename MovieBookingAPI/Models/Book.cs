@@ -18,6 +18,9 @@ namespace MovieBookingAPI.Models
 
         public int NumberofTickets { get; set; }
         public int NumberofSeats { get; set; }
+        
+        public double? Amount { set; get; } = null;
+        public String Currency { set; get; } = null;
 
     }
 }
