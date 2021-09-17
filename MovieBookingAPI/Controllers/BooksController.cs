@@ -77,6 +77,8 @@ namespace MovieBookingAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Book>> PostBook(Book book)
         {
+             var value = await CurrencyConvertor(book.Currency);
+            book.Amount = book.Amount * value;
             _context.BookItems.Add(book);
             await _context.SaveChangesAsync();
 
