@@ -1,11 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieBookingAPI.Models;
+using Newtonsoft.Json.Linq;
 
 namespace MovieBookingAPI.Controllers
 {
@@ -24,7 +27,16 @@ namespace MovieBookingAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Book>>> GetBookItems()
         {
-            return await _context.BookItems.ToListAsync();
+            var book = await _context.GetBookItems.ToListAsync();
+
+            foreach (var item in book.Where(w => w.Currency != "sgd"))
+            {
+                var value = await CurrencyConvertor(item.Currency);
+                item.Amount = item.Amount * value;
+            }
+
+            return book;
+           
         }
 
         // GET: api/Books/5
@@ -101,6 +113,36 @@ namespace MovieBookingAPI.Controllers
             return NoContent();
         }
 
+        private async Task<double> CurrencyConvertor(String currencyType)
+        {
+            double results = -1L;
+            HttpClient client = null;
+            HttpResponseMessage response = null;
+
+            try
+            {
+                string apiCallURL =
+                    String.Format(@"https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{0}/sgd.json", currencyType);
+
+                client = new HttpClient();
+                response = (HttpResponseMessage)await client.GetAsync(apiCallURL);
+
+                var json_results = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine(results);
+
+                dynamic json = JObject.Parse(json_results);
+                Debug.WriteLine((String)json.sgd);
+
+                results = Convert.ToDouble((String)json.sgd);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return results;
+        }
+        
         private bool BookExists(int id)
         {
             return _context.BookItems.Any(e => e.BookingId == id);
